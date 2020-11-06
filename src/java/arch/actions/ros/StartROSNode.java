@@ -3,7 +3,7 @@ package arch.actions.ros;
 import jason.asSemantics.ActionExec;
 import rjs.arch.actions.ros.AbstractStartROSNode;
 import rjs.arch.agarch.AbstractROSAgArch;
-import ros.RosNodeDisambi;
+import ros.RosNode;
 
 public class StartROSNode extends AbstractStartROSNode {
 	
@@ -14,7 +14,7 @@ public class StartROSNode extends AbstractStartROSNode {
 
 	@Override
 	public void execute() {
-		rosnode = new RosNodeDisambi("supervisor");
+		rosnode = new RosNode("supervisor");
 		configRosnode();
 	}
 

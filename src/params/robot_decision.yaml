@@ -1,9 +1,7 @@
 
 robot_decision:
   action_names:
-    Take: take
-    Give: give
-    Throw: throw
-    GoToObject: goto_o
-    GoToTrashbin: goto_t
+    TellHumanToPack: tellToPack
+    TellHumanToTake: tellToTake
+    PointHumanToTake: pointObject
     

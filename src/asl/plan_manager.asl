@@ -1,20 +1,31 @@
 // Agents plan_manager in project disambi_task
 { include("common.asl")}
 /* Initial beliefs and rules */
+//action(0,"planned","TellHumanToTake", ["robot","human"], 0).
+//actionParams(0, ["cube_3"]).
+//action(1,"planned","Take", ["human"], 0).
+//actionParams(1, ["cube_3"]).
+//action(2,"planned","TellHumanToPack", ["robot","human"], 0).
+//actionParams(2, ["cube_3", "area_black"]).
+//link(0,[]).
+//link(1,[0]).
+//link(2,[1]).
+//plan(0,[0,1,2]).
+
 /* Initial goals */
 !start.
 
 +!start : true <- 
 	.verbose(2); 
 	!getRobotName;
-	rjs.jia.log_beliefs;
+//	rjs.jia.log_beliefs;
 	+newGoal("ThrowAll",0).
 
 /* Plans */
 
 
 +newGoal(Goal,Priority) : true <-
-	.abolish(_);
+//	.abolish(_);
 	+currentGoal(Goal,Priority);
 	-newGoal(Goal,Priority)[source(_)].
 	
@@ -28,6 +39,7 @@
 	
 +currentPlan(ID, Goal) : true <-
 	?plan(ID,Actions);
+	+pendingActions(Actions);
 	.findall(X, 
 		action(X,"planned",Name,Agents,Cost) 
 		& .findall(Origin, link(Origin,P) & .empty(P), L) 
@@ -54,13 +66,22 @@ wantedAction(Name,Params) :- (action(ID,"todo",Name,Agents,_) | action(ID,"ongoi
 +!actionExecuted(Name,Params) : wantedAction(Name,Params) <-
 	-action(ID,"todo",Name,Agents,Cost);
 	+action(ID,"executed",Name,Agents,Cost);
+	?pendingActions(Actions);
+	rjs.jia.delete_from_list(ID,Actions,RemainActions);
+	if(.empty(RemainActions)){
+		+planOver;
+		-+pendingActions([]);
+	}else{
+		-+pendingActions(RemainActions);
+	}
 	!updatePlan.
 	
 +!actionExecuted(Name,Params) : not wantedAction(Name,Params) <-
-	?currentGoal(Goal,_);
-	?currentPlan(ID,Goal);
-	!endPlan(ID);
-	!getNewPlan(Goal).
+	true.
+//	?currentGoal(Goal,_);
+//	?currentPlan(ID,Goal);
+//	!endPlan(ID);
+//	!getNewPlan(Goal).
 	
 +!endPlan(IDp): true <-
 	for( .findall(IDa, action(IDa,"planned",_,_,_) | action(IDa,"todo",_,_,_), Actions ) & .member(X, Actions)){
@@ -108,11 +129,18 @@ wantedAction(Name,Params) :- (action(ID,"todo",Name,Agents,_) | action(ID,"ongoi
 		}
 	}.	
 	
-+action(ID,"todo",Name,Agents,Cost) : (actionParams(ID,Params) | not actionParams(ID,Params)) <-
++action(ID,"todo",Name,Agents,Cost) : robotName(Agent) & .member(Agent,Agents)  & (actionParams(ID,Params) | not actionParams(ID,Params)) <-
 	if(.ground(Params)){
 		.send(robot_decision, tell, actionParams(ID,Params));
 	};
 	.send(robot_decision, tell, action(ID,Name,Agents,Cost)).
-
 	
+//+action(ID,"todo",Name,Agents,Cost) : (actionParams(ID,Params) | not actionParams(ID,Params)) <-
+//	if(.ground(Params)){
+//		.send(human_monitor, tell, actionParams(ID,Params));
+//	};
+//	.send(robot_decision, tell, action(ID,Name,Agents,Cost)).
+
++planOver: true <-
+	.send(robot_decision, tell, planOver).
 	

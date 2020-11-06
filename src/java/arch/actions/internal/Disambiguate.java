@@ -10,6 +10,7 @@ import jason.asSemantics.ActionExec;
 import jason.asSyntax.ListTermImpl;
 import jason.asSyntax.StringTermImpl;
 import knowledge_sharing_planner_msgs.DisambiguationResponse;
+import knowledge_sharing_planner_msgs.Triplet;
 import rjs.arch.actions.AbstractAction;
 import rjs.arch.agarch.AbstractROSAgArch;
 
@@ -45,7 +46,12 @@ public class Disambiguate extends AbstractAction {
 		
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put("individual", individual);
-		parameters.put("ontology", rosnode.getParameters().getString("disambi/ontologies/"+ontology));
+		parameters.put("ontology", rosnode.getParameters().getString("supervisor/ontologies/"+ontology));
+		Triplet ctx = rosAgArch.createMessage(Triplet._TYPE);
+		ctx.setFrom(individual);
+		ctx.setRelation("isOnTopOf");
+		ctx.setOn("table_l_0");
+		parameters.put("baseFacts", ctx);
 		rosnode.callAsyncService("disambiguate", respListener, parameters);
 
 	}
